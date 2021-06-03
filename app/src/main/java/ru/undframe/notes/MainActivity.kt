@@ -1,5 +1,6 @@
 package ru.undframe.notes
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,16 +13,12 @@ import org.koin.core.parameter.parametersOf
 import ru.undframe.notes.adapters.NotesAdapter
 import ru.undframe.notes.contracts.MainContract
 import ru.undframe.notes.data.Note
-
-open class ViewModel()
-
-class MyViewModel(val repo: MainActivity) : ViewModel()
-
+import ru.undframe.notes.view.EditNoteActivity
 
 class MainActivity : AppCompatActivity(), MainContract.View {
 
 
-    private val mPresenter: MainContract.Presenter by inject { parametersOf(this) }
+    private val presenter: MainContract.Presenter by inject { parametersOf(this) }
 
     private lateinit var notesView: RecyclerView
 
@@ -36,7 +33,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             androidContext(this@MainActivity)
             modules(KoinModule.loadModule())
         }
-        mPresenter.launch()
+        presenter.launch()
 
 
     }
@@ -45,7 +42,11 @@ class MainActivity : AppCompatActivity(), MainContract.View {
 
         notesView.layoutManager = LinearLayoutManager(this)
         notesView.adapter = NotesAdapter(notes) {
-
+            openEditNoteActivity(it)
         }
+    }
+
+    override fun openEditNoteActivity(note: Note) {
+        startActivity(Intent(this,EditNoteActivity::class.java))
     }
 }
