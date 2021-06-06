@@ -7,6 +7,7 @@ class MainContract  {
     interface View {
         fun showNotes(notes:Array<Note>)
         fun openEditNoteActivity(note:Note)
+        fun openCreateNoteActivity()
     }
 
     interface Presenter{

@@ -1,19 +1,15 @@
 package ru.undframe.notes.presentor
 
-import org.koin.core.KoinComponent
-import org.koin.core.inject
 import ru.undframe.notes.contracts.MainContract
-import ru.undframe.notes.data.Note
 import ru.undframe.notes.data.NotesRepository
 
-class MainPresenter(private val mainView: MainContract.View) : MainContract.Presenter,
-    KoinComponent {
-
-    private val notesRepository: NotesRepository by inject()
-
+class MainPresenter(
+    private val mainView: MainContract.View,
+    private val notesRepository: NotesRepository
+) : MainContract.Presenter {
 
     override fun launch() {
-        mainView.showNotes(notesRepository.getNotes(10))
+        mainView.showNotes(notesRepository.getNotes())
     }
 
 
