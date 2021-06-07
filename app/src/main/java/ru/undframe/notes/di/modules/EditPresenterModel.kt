@@ -12,9 +12,8 @@ class EditPresenterModel {
     @Provides
     @Singleton
     fun getPresenter(
-        view: EditNoteContract.View?,
         notesRepository: NotesRepository?
     ): EditNoteContract.Presenter {
-        return EditorNotePresenter(view!!, notesRepository!!)
+        return EditorNotePresenter(notesRepository!!)
     }
 }

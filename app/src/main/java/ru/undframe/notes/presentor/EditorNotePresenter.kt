@@ -5,7 +5,7 @@ import ru.undframe.notes.data.Note
 import ru.undframe.notes.data.NotesRepository
 
 
-class EditorNotePresenter(private val view: EditNoteContract.View,private val notesRepository: NotesRepository) : EditNoteContract.Presenter {
+class EditorNotePresenter(private val notesRepository: NotesRepository) : EditNoteContract.Presenter {
 
 
     override fun saveNote(note: Note) {

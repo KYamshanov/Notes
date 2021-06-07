@@ -1,27 +1,30 @@
 package ru.undframe.notes.data
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 
-class DatabaseNotesRepository(private val disposable: CompositeDisposable) : NotesRepository{
+class DatabaseNotesRepository(
+    private val disposable: CompositeDisposable,
+    private val database: NoteDatabase
+) : NotesRepository {
 
 
-    private val notes: MutableMap<String, Note> = simpleSaveNotes(
-        arrayOf(
-            Note.createNot("Это зачетка? Нет! Это заметка АХАХАХА, шутка"),
-            Note.createNot("Заметка #2, но после будет pfxtnrf #1"),
-            Note.createNot(" this is pfvtnrf #1 без текста, но с текстом, парадокс")
+    private val notes: MutableMap<String, Note> = HashMap()
+
+
+    fun loadNotesFromDatabase() {
+
+        disposable.add(
+            database.noteDeo().getAll().subscribeOn(Schedulers.computation())
+                .subscribe {
+                    for (note in it) {
+                        notes[note.id] = note
+                    }
+                }
         )
-    )
 
 
-    private fun simpleSaveNotes(notes: Array<Note>):MutableMap<String,Note> {
-        val notesMap:MutableMap<String,Note> = HashMap()
-
-        notes.forEach{
-            notesMap[it.id] = it
-        }
-
-        return notesMap
     }
 
 
@@ -29,8 +32,25 @@ class DatabaseNotesRepository(private val disposable: CompositeDisposable) : Not
         return notes.values.toTypedArray()
     }
 
-    override fun save(note: Note) {
+    override fun save(note: Note, successfulAction: () -> Unit) {
         notes[note.id] = note
+
+        database.noteDeo().insert(note).subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                successfulAction.invoke()
+            }
+    }
+
+    override fun delete(note: Note, successfulAction: () -> Unit) {
+        notes.remove(note.id)
+
+        database.noteDeo().delete(note).subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                successfulAction.invoke()
+            }
+
     }
 
 }

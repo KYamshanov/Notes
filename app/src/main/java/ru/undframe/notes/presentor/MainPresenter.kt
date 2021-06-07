@@ -1,6 +1,7 @@
 package ru.undframe.notes.presentor
 
 import ru.undframe.notes.contracts.MainContract
+import ru.undframe.notes.data.Note
 import ru.undframe.notes.data.NotesRepository
 
 class MainPresenter(
@@ -10,6 +11,13 @@ class MainPresenter(
 
     override fun launch() {
         mainView.showNotes(notesRepository.getNotes())
+    }
+
+
+    override fun deleteNote(note: Note) {
+        notesRepository.delete(note) {
+            mainView.deleteNoteAndRefresh(note)
+        }
     }
 
 

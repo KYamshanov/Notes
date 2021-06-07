@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">Notes</string>
     <string name="note_default_text">Название записи</string>
+    <string name="login">Ваш логин</string>
+    <string name="password">Ваш пароль</string>
+    <string name="invalid_username_or_password">Неверный логин или пароль</string>
+    <string name="save_password">Сохранить пароль</string>
+    <string name="sing_in">Войти</string>
+    <string name="sing_out">Зарегистрироваться</string>
+    <string name="create_note">Создать заметку</string>
 </resources>

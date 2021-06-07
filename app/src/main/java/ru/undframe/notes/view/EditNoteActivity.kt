@@ -58,7 +58,7 @@ class EditNoteActivity : AppCompatActivity(), EditNoteContract.View {
             if (editMode)
                 presenter.saveNote(Note(noteId!!, getNoteName(), getNoteText(), noteDate))
             else
-                presenter.saveNote(Note.createNot(getNoteName(), getNoteText()))
+                presenter.saveNote(Note.createNote(getNoteName(), getNoteText()))
 
             finish()
         }

@@ -3,22 +3,18 @@ package ru.undframe.notes.view
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.functions.Consumer
-import io.reactivex.rxjava3.schedulers.Schedulers
 import ru.undframe.notes.App
 import ru.undframe.notes.R
 import ru.undframe.notes.adapters.NotesAdapter
 import ru.undframe.notes.contracts.MainContract
 import ru.undframe.notes.data.Note
-import ru.undframe.notes.data.NoteDatabase
-import ru.undframe.notes.decorators.NoteItemDecorator
+import ru.undframe.notes.data.NotesRepository
 import javax.inject.Inject
 
 
@@ -28,10 +24,12 @@ class MainActivity : AppCompatActivity(), MainContract.View {
     lateinit var presenter: MainContract.Presenter
 
     @Inject
-    lateinit var database: NoteDatabase
+    lateinit var repository: NotesRepository
 
     private lateinit var notesView: RecyclerView
+    private lateinit var notesAdapter: NotesAdapter
     private lateinit var createNoteButton: Button
+    private lateinit var profileButton: ImageView
 
     @Inject
     lateinit var disposables: CompositeDisposable
@@ -43,51 +41,22 @@ class MainActivity : AppCompatActivity(), MainContract.View {
 
         notesView = findViewById(R.id.notes_view)
         createNoteButton = findViewById(R.id.create_note_button)
+        profileButton = findViewById(R.id.profile_button)
 
         presenter.launch()
 
-        createNoteButton.setOnClickListener {
-            openCreateNoteActivity()
-        }
-
-        println("AAA")
-
-        database.noteDeo()?.let { it ->
-
-            println("BBBBB")
-
-
-
-            disposables.add(
-                Completable.fromAction {
-                    it.insert(Note.createNot("Это тесовая записка для базы данных"))
-
-                }.subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread()).subscribe()
-            )
-
-
-            disposables.add(
-                it.getAll()!!.subscribeOn(Schedulers.computation())
-                    .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        Consumer { it2 ->
-                            it2!!.forEach { l ->
-                                println(l!!.text)
-                            }
-                        })
-            )
-
-
-        }
+        createNoteButton.setOnClickListener { openCreateNoteActivity() }
+        profileButton.setOnClickListener { openAuthMenu() }
 
     }
 
+    override fun openAuthMenu() {
+        startActivity(Intent(this, AuthorizationActivity::class.java))
+    }
 
     override fun onResume() {
         super.onResume()
-        presenter.launch()
+        notesAdapter.setNotes(repository.getNotes())
     }
 
     override fun onDestroy() {
@@ -98,12 +67,39 @@ class MainActivity : AppCompatActivity(), MainContract.View {
     override fun showNotes(notes: Array<Note>) {
 
         notesView.layoutManager = LinearLayoutManager(this)
-        notesView.adapter = NotesAdapter(notes) {
+        notesAdapter = NotesAdapter(this, notes) {
             openEditNoteActivity(it)
         }
-        notesView.addItemDecoration(NoteItemDecorator())
+        notesView.adapter = notesAdapter
+
     }
 
+
+    override fun openConfirmationWindow(note: Note) {
+
+        AlertDialog.Builder(this)
+            .setTitle("Подтверждение")
+            .setMessage("Вы уверены, что ходите удалить заметку?")
+            .setPositiveButton("Да") { dialog, _ ->
+                presenter.deleteNote(note)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Нет") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create().show()
+
+
+    }
+
+    override fun refreshNotes() {
+        notesAdapter.notifyDataSetChanged()
+    }
+
+    override fun deleteNoteAndRefresh(note: Note) {
+        notesAdapter.removeNote(note)
+        refreshNotes()
+    }
 
     override fun openCreateNoteActivity() {
         val intent = Intent(this, EditNoteActivity::class.java)

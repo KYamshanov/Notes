@@ -3,6 +3,7 @@ package ru.undframe.notes
 import android.app.Application
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import ru.undframe.notes.di.components.DaggerBaseSingletonComponent
+import ru.undframe.notes.view.AuthorizationActivity
 import ru.undframe.notes.view.EditNoteActivity
 import ru.undframe.notes.view.MainActivity
 
@@ -15,6 +16,10 @@ class App : Application() {
 
     fun inject(view: MainActivity) {
         daggerNotesRepositoryComp.mainActivity().application(view).build().inject(view)
+    }
+
+    fun inject(view: AuthorizationActivity) {
+        daggerNotesRepositoryComp.authActivity().application(view).build().inject(view)
     }
 
     fun inject(view: EditNoteActivity) {
