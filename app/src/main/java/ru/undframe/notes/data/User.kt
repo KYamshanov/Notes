@@ -1,23 +1,33 @@
 package ru.undframe.notes.data
 
+import com.google.gson.annotations.SerializedName
 import org.json.JSONException
 import org.json.JSONObject
 import ru.undframe.notes.utils.ResponseStatus
 
-data class User(var id:Long,var username:String,var email:String,var authorization:Boolean,var authStatus: Int,var accessToken:String?,var refreshToken:String?){
+data class User(
+    var id: Long,
+    var username: String,
+    var email: String,
+    @SerializedName("auth_status") var authStatus: Int,
+    @SerializedName("access_token") var accessToken: String?,
+    @SerializedName("refresh_token") var refreshToken: String?
+) {
 
-    fun fillData(user: User){
+
+
+
+    fun fillData(user: User) {
         id = user.id
         username = user.username
         email = user.email
-        authorization = user.authorization
         authStatus = user.authStatus
         accessToken = user.accessToken
         refreshToken = user.refreshToken
     }
 
-    fun isAuthorization():Boolean{
-        return authorization
+    fun isAuthorization(): Boolean {
+        return accessToken!=null
     }
 
     companion object {
@@ -34,7 +44,6 @@ data class User(var id:Long,var username:String,var email:String,var authorizati
                     user.accessToken = (jsonObject.getString("access_token"))
                     user.refreshToken = (jsonObject.getString("refresh_token"))
                     user.authStatus = (authStatus)
-                    user.authorization = (true)
                 }
             } catch (e: JSONException) {
                 e.printStackTrace()
@@ -43,10 +52,9 @@ data class User(var id:Long,var username:String,var email:String,var authorizati
             return user
         }
 
-
+        @JvmStatic
         fun getInstance(): User {
-            val user: User = User(-1, "null", "null", false, -1, null, null)
-            user.authorization = false
+            val user: User = User(-1, "null", "null",  -1, null, null)
             user.authStatus = ResponseStatus.NOT_AUTHORIZED
             return user
         }

@@ -8,13 +8,18 @@ import com.fingerprintjs.android.fingerprint.signal_providers.StabilityLevel
 import org.json.JSONException
 import org.json.JSONObject
 
-class FingerprintService(private val context:Context):IdentifierDeviceService {
+class FingerprintService(private val context: Context) : IdentifierDeviceService {
 
     private var fingerprinter = FingerprinterFactory
-    .getInstance(context, Configuration(3))
+        .getInstance(context, Configuration(3))
 
-    override fun getDeviceId(body:(String)->Unit){
+    private var deviceId: String? = null;
 
+    override fun init() {
+        init { }
+    }
+
+    override fun init(body: (String) -> Unit) {
         fingerprinter.getFingerprint(StabilityLevel.UNIQUE) { fingerprintResult ->
             val fingerprint = fingerprintResult.fingerprint
 
@@ -25,11 +30,25 @@ class FingerprintService(private val context:Context):IdentifierDeviceService {
             } catch (e: JSONException) {
                 e.printStackTrace()
             }
-            val deviceId =  String(Base64.encode(jsonObject.toString().toByteArray(), Base64.URL_SAFE))
+            val device =
+                Base64.encodeToString(jsonObject.toString().toByteArray(), Base64.URL_SAFE)
+                    .replace("\n", "")
 
-            body.invoke(deviceId)
+            println(device)
+            deviceId = device
+            body.invoke(device)
+
         }
+    }
 
+    override fun getDeviceIdCallable(body: (String) -> Unit) {
+        if (deviceId == null)
+            init(body)
+        else body.invoke(deviceId!!)
+    }
+
+    override fun getDeviceId(): String? {
+        return deviceId
     }
 
 }

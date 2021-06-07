@@ -3,9 +3,12 @@ package ru.undframe.notes.view
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
+import android.widget.Toast
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.observers.DisposableSingleObserver
@@ -17,6 +20,7 @@ import ru.undframe.notes.data.User
 import ru.undframe.notes.encryption.SimpleCipher
 import ru.undframe.notes.services.AuthService
 import ru.undframe.notes.services.IdentifierDeviceService
+import ru.undframe.notes.services.UserService
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
@@ -33,6 +37,9 @@ class AuthorizationActivity : AppCompatActivity(), AuthorizationContract.View {
 
     @Inject
     lateinit var identifierDeviceService: IdentifierDeviceService
+
+    @Inject
+    lateinit var userService: UserService
 
     private lateinit var loginTextView: TextView
     private lateinit var passwordTextView: TextView
@@ -52,33 +59,7 @@ class AuthorizationActivity : AppCompatActivity(), AuthorizationContract.View {
         error = findViewById(R.id.auth_error_info)
 
         authButton.setOnClickListener {
-            identifierDeviceService.getDeviceId { device ->
-                println("DeviceId: $device")
-
-                val password = getPassword()
-
-                val aesKey = SecretKeySpec(
-                    Base64.decode(
-                        SimpleCipher.PASSWORD_CIPHER_KEY.toByteArray(),
-                        Base64.DEFAULT
-                    ), "AES"
-                )
-                val cipher = Cipher.getInstance("AES")
-                cipher.init(Cipher.ENCRYPT_MODE, aesKey)
-                val encrypted = cipher.doFinal(password.toByteArray())
-                val s = DatatypeConverter.printBase64Binary(encrypted)
-
-
-
-                authService.authUser(getLogin(), s, device, "NEEDLE")
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({
-                        println(it)
-                    }, {
-                        println(it)
-                    })
-            }
+            presenter.authorizationUser(getLogin(),getPassword())
         }
 
     }
@@ -91,6 +72,15 @@ class AuthorizationActivity : AppCompatActivity(), AuthorizationContract.View {
 
     fun getPassword(): String {
         return passwordTextView.text.toString()
+    }
+
+    override fun closeActivity() {
+        finish()
+    }
+
+    override fun showError() {
+        error.visibility = View.VISIBLE
+        Toast.makeText(this,"",Toast.LENGTH_SHORT).show()
     }
 
 

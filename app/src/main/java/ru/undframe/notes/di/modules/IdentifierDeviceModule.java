@@ -14,7 +14,9 @@ public class IdentifierDeviceModule {
     @BaseSingletonScope
     @Provides
     public IdentifierDeviceService getService(Application app){
-        return new FingerprintService(app);
+        FingerprintService fingerprintService = new FingerprintService(app);
+        fingerprintService.init();
+        return fingerprintService;
     }
 
 }

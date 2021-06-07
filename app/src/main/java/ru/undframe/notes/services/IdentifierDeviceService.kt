@@ -1,5 +1,8 @@
 package ru.undframe.notes.services
 
 interface IdentifierDeviceService {
-    fun getDeviceId(body: (String) -> Unit)
+    fun getDeviceIdCallable(body: (String) -> Unit)
+    fun getDeviceId(): String?
+    fun init(body: (String) -> Unit)
+    fun init()
 }
